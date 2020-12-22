@@ -15,4 +15,7 @@ public interface UsersMapper {
 
     @Insert("INSERT INTO USERS (username, salt, password, firstname, lastname) VALUES(#{username}, #{salt}, #{password}, #{firstName}, #{lastName})")
     int insert(Users user);
+
+    @Select("SELECT userid FROM　USERS WHERE　username = #{username}")
+    int getUserId(String username);
 }

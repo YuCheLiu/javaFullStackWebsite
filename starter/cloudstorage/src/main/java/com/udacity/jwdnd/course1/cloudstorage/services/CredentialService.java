@@ -23,7 +23,12 @@ public class CredentialService {
     }
 
     public ArrayList<Credentials> getCredentialList(String username){
-        return credentialsMapper.queryCredentialList(usersMapper.getUsers(username).getUserid().toString());
+        ArrayList<Credentials> list = credentialsMapper.queryCredentialList(usersMapper.getUsers(username).getUserid().toString());
+        for (Credentials i: list) {
+            String plainPassword = encryptionService.decryptValue(i.getPassword(),i.getKey());
+            i.setPassword(plainPassword);
+        }
+        return list;
     }
 
     public void addCredential(CredentialForm credentialForm, String username){
@@ -32,20 +37,23 @@ public class CredentialService {
         random.nextBytes(key);
         String encodedKey = Base64.getEncoder().encodeToString(key);
 
-        System.out.print("key generation: "+encodedKey);
-        Credentials credentials = new Credentials(null, "a", encodedKey, "aaa",usersMapper.getUsers(username).getUserid());
-        System.out.print("credential generation");
-        //this one doesn't work
-        //credentialsMapper.insert(credentials, "123a");
-        //this one works
-        credentialsMapper.insert(credentials,username,"123");
+        Credentials credentials = new Credentials(null, credentialForm.getUrl(), credentialForm.getUsername(), encodedKey, encryptionService.encryptValue(credentialForm.getPassword(),encodedKey),usersMapper.getUsers(username).getUserid());
+
+        credentialsMapper.insert(credentials,username);
     }
 
     public void deleteCredential(Integer credentialid){
         credentialsMapper.deleteCredential(credentialid.toString());
     }
 
-    public void updateCredential(Credentials credentials, Integer credentialid){
-        credentialsMapper.updateCredential(credentials, credentialid);
+    public void updateCredential(CredentialForm credentials, String username){
+
+        SecureRandom random = new SecureRandom();
+        byte[] key = new byte[16];
+        random.nextBytes(key);
+        String encodedKey = Base64.getEncoder().encodeToString(key);
+
+        Credentials credential = new Credentials(credentials.getCredentialId(),credentials.getUrl(),credentials.getUsername(),encodedKey,encryptionService.encryptValue(credentials.getPassword(),encodedKey), usersMapper.getUserId(username));
+        credentialsMapper.updateCredential(credential,credentials.getCredentialId());
     }
 }

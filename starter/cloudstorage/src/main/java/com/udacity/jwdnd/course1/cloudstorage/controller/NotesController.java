@@ -30,7 +30,6 @@ public class NotesController {
                 noteService.editNote(noteForm,auth.getName());
         }
         model.addAttribute("noteList",noteService.getNoteList(auth.getName()));
-        noteService.checkAction(noteForm.getNoteAction());
         return "redirect:/home";
     }
 
